@@ -90,7 +90,7 @@ with st.sidebar:
     price_range = st.slider("Εύρος Τιμής (€)", 5.0, 60.0, (5.0, 20.0))
     sort_option = st.selectbox("Ταξινόμηση", ["VfM Score", "Τιμή (Αύξουσα)", "Rating"])
 
-# --- ΚΥΡΙΩΣ ΠΕΡΙΕΧΟΜΕΝΟ ---
+# --- ΚΥΡΙΩΣ ΠΕΡΙΕΧΟΜΕΝΟ ---CLS
 st.title("🍷 Ας φτιάξουμε την κάβα μας...")
 
 try:
