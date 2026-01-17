@@ -4,13 +4,26 @@ import pandas as pd
 import io
 import altair as alt
 
-# 1. Ρύθμιση Σελίδας & Στρατηγικό Styling
-st.set_page_config(page_title="Wine Intelligence Elite", layout="wide", page_icon="🍷")
+# 1. Ρύθμιση Σελίδας (Μόνο μία φορά στην αρχή)
+st.set_page_config(
+    page_title="Wine Intelligence Elite",
+    page_icon="🍷",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 # Χρώματα: Primary Green (#2e7d32), Light Green (#e8f5e9), Neutral Gray (#f8f9fa)
 st.markdown("""
     <style>
     .main { background-color: #f8f9fa; }
+
+    /* Διόρθωση για κινητά: Μείωση περιθωρίων */
+    @media (max-width: 640px) {
+        .block-container {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+    }
 
     /* Ενοποίηση στυλ για όλα τα κουμπιά (Outline Style) */
     .stButton>button, .stDownloadButton>button { 
@@ -90,7 +103,7 @@ with st.sidebar:
     price_range = st.slider("Εύρος Τιμής (€)", 5.0, 60.0, (5.0, 20.0))
     sort_option = st.selectbox("Ταξινόμηση", ["VfM Score", "Τιμή (Αύξουσα)", "Rating"])
 
-# --- ΚΥΡΙΩΣ ΠΕΡΙΕΧΟΜΕΝΟ ---CLS
+# --- ΚΥΡΙΩΣ ΠΕΡΙΕΧΟΜΕΝΟ ---
 st.title("🍷 Ας φτιάξουμε την κάβα μας...")
 
 try:
@@ -113,14 +126,14 @@ try:
     elif sort_option == "Rating":
         filt_df = filt_df.sort_values(by="score", ascending=False)
 
-    # --- TOP 4 CARDS (Χωρίς περικοπή ονομάτων) ---
+    # --- TOP 4 CARDS ---
     st.write("### 🔥 Οι 4 Κορυφαίες Επιλογές")
     top_4 = filt_df.head(4)
-    cols = st.columns(4)  # ΑΛΛΑΓΗ ΣΕ 4 ΓΙΑ ΠΕΡΙΣΣΟΤΕΡΟ ΧΩΡΟ
+    cols = st.columns(4)
     for i, (idx, row) in enumerate(top_4.iterrows()):
         with cols[i]:
             st.metric(
-                label=row['wine_name'],  # Χωρίς [:12], δείχνει όλο το όνομα
+                label=row['wine_name'],
                 value=f"{row['best_price']}€",
                 delta=f"VfM Index: {row['VfM_Score']:.1f}"
             )
@@ -130,7 +143,6 @@ try:
 
     with c_left:
         st.subheader("📊 Ανάλυση Value for Money")
-        # Γράφημα σε Fresh Green
         chart = alt.Chart(filt_df.head(10)).mark_bar(color='#81c784').encode(
             x=alt.X('VfM_Score:Q', title='VfM Index'),
             y=alt.Y('wine_name:N', sort='-x', title=None),
@@ -148,7 +160,7 @@ try:
                 st.table(opt_df[['wine_name', 'best_price']])
                 st.info(f"Σύνολο: {opt_df['best_price'].sum():.2f}€")
 
-    # --- ΠΙΝΑΚΑΣ ΔΙΑΧΕΙΡΙΣΗΣ (22px Bold Green) ---
+    # --- ΠΙΝΑΚΑΣ ΔΙΑΧΕΙΡΙΣΗΣ ---
     st.write("---")
     st.markdown(
         '<p style="font-size: 22px; font-weight: bold; color: #1b5e20; margin-bottom: 5px;">🍷 Διαχείριση 210 Βραβευμένων Ετικετών</p>',
@@ -169,7 +181,7 @@ try:
         column_order=["wine_name", "live_check", "best_price", "VfM_Score", "score", "category", "region"]
     )
 
-    # --- ΚΟΥΜΠΙΑ ΕΝΕΡΓΕΙΩΝ (Unified Outline) ---
+    # --- ΚΟΥΜΠΙΑ ΕΝΕΡΓΕΙΩΝ ---
     st.write("---")
     btn_col1, btn_col2, btn_col3 = st.columns([1, 1, 1])
     with btn_col1:
