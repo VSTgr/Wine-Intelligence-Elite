@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- CSS ΓΙΑ UI/UX ---
+# --- CSS ΓΙΑ UI/UX (Αισθητική) ---
 st.markdown("""
     <style>
     .main { background-color: #f8f9fa; }
@@ -28,9 +28,8 @@ st.markdown("""
         border: 1px solid #2e7d32 !important; font-weight: bold !important;
     }
     .stButton>button:hover { background-color: #e8f5e9 !important; }
-    [data-testid="stMetricLabel"] { white-space: normal !important; word-wrap: break-word !important; }
-    h1 { color: #1b5e20; font-weight: 800; }
-    h3 { color: #2e7d32; }
+    /* Κρύβουμε το default margin του τίτλου */
+    .block-container { padding-top: 2rem; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -39,7 +38,7 @@ def load_data():
     conn = sqlite3.connect('wines.db')
     df = pd.read_sql("SELECT * FROM wine_intelligence", conn)
 
-    # Καθαρισμός των "None" για να μη φαίνονται άσχημα
+    # Καθαρισμός των "None" στις σημειώσεις
     if 'notes' not in df.columns:
         df['notes'] = ""
     else:
@@ -53,30 +52,40 @@ def load_data():
 
 def save_to_db(df):
     conn = sqlite3.connect('wines.db')
-    # Κρατάμε τις σημειώσεις, αφαιρούμε μόνο τις προσωρινές στήλες
     to_save = df.drop(columns=['VfM_Score', 'live_check'], errors='ignore')
     to_save.to_sql('wine_intelligence', conn, if_exists='replace', index=False)
     conn.commit()
     conn.close()
 
 
-# --- SIDEBAR ---
+# --- SIDEBAR (PROFESSIONAL LAYOUT) ---
 with st.sidebar:
+    # 1. PROFILE & BRANDING
     if os.path.exists("logo.png"):
-        st.image("logo.png", width=160)
+        # Βάζουμε την εικόνα σε κύκλο (μέσω CSS, αλλά εδώ απλά κεντράρουμε)
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.image("logo.png", width=130)
 
-    # --- ΟΔΗΓΟΣ ΧΡΗΣΗΣ ΜΕ DISCLAIMER ---
-    with st.expander("❓ Πως θα διαλέξεις κρασί"):
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h3 style="margin:0; padding:0; color: #444;">Wine Selection</h3>
+        <p style="font-size: 14px; color: #888; margin:0;">Curated by VST</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 2. ΟΔΗΓΟΣ (Χρήσιμος για όλους)
+    with st.expander("📘 Οδηγός"):
         st.markdown("""
         **1. 🎯 Βάλε Στόχο:** Διάλεξε χρώμα (π.χ. *Ερυθρό*) και όρισε το Budget σου στα φίλτρα.
-
+        
         **2. 🦊 Κυνήγησε το VfM:** Ταξινόμησε με βάση το **VfM Score**.  
         *Υψηλό VfM = Κορυφαίο κρασί σε τιμή ευκαιρίας.*
-
+        
         **3. 🏆 Δες τους Νικητές:** Οι 4 κάρτες στην κορυφή σου δείχνουν τις καλύτερες επιλογές αυτόματα.
-
+        
         **4. 🛒 Αγόρασε Έξυπνα:** Πάτα το **Link** για να βρεις το κατάστημα.
-
+        
         ---
         ⚠️ **Σημείωση:**
         *Οι τιμές έχουν καταγραφεί σε συγκεκριμένη χρονική περίοδο. Επειδή η αγορά αλλάζει, να επιβεβαιώνετε πάντα την τελική τιμή στο κατάστημα.*
@@ -84,19 +93,52 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("### 🔐 Admin Access")
-    admin_password = st.text_input("Admin Key", type="password")
+    # 3. ΦΙΛΤΡΑ (Το βασικό εργαλείο)
+    st.markdown("### 🎯 Κριτήρια Αναζήτησης")
 
+    search = st.text_input("🔍 Ψάχνεις κάτι συγκεκριμένο;", placeholder="π.χ. Μαλαγουζιά")
+
+    st.markdown("---")
+
+    cat_filter = st.multiselect(
+        "🍷 Χρώμα / Τύπος",
+        ["Λευκό", "Ερυθρό", "Ροζέ", "Επιδόρπιος", "Αφρώδης"],
+        default=["Λευκό", "Ερυθρό", "Ροζέ"]
+    )
+
+    price_range = st.slider("💶 Budget (€)", 5.0, 60.0, (5.0, 20.0))
+
+    sort_option = st.selectbox(
+        "📊 Ταξινόμηση κατά",
+        ["VfM Score", "Τιμή (Αύξουσα)", "Rating"]
+    )
+
+    # Κενό για να σπρώξουμε τα admin tools κάτω
+    st.markdown("<br><br>", unsafe_allow_html=True)
+
+    # 4. ADMIN & FOOTER (Διακριτικά στο τέλος)
     st.divider()
-    st.markdown("### 🎯 Φίλτρα")
-    search = st.text_input("🔍 Αναζήτηση")
-    cat_filter = st.multiselect("Τύπος", ["Λευκό", "Ερυθρό", "Ροζέ", "Επιδόρπιος", "Αφρώδης"],
-                                default=["Λευκό", "Ερυθρό", "Ροζέ"])
-    price_range = st.slider("Εύρος Τιμής (€)", 5.0, 60.0, (5.0, 20.0))
-    sort_option = st.selectbox("Ταξινόμηση", ["VfM Score", "Τιμή (Αύξουσα)", "Rating"])
+    with st.expander("⚙️ Διαχείριση (Admin Only)"):
+        admin_password = st.text_input("Admin Key", type="password", placeholder="Κωδικός...")
 
-# --- CONTENT ---
-st.title("🍷 Ας φτιάξουμε την κάβα μας...")
+    st.caption("© 2024 Wine Intelligence | VSTgr")
+
+# --- MAIN CONTENT (Με Hero Image & Lifestyle) ---
+
+# 1. HERO IMAGE (Ατμόσφαιρα)
+st.image("https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=2070&auto=format&fit=crop",
+         use_container_width=True)
+
+# 2. ΤΙΤΛΟΣ & ΥΠΟΤΙΤΛΟΣ (Κεντραρισμένα)
+st.markdown("""
+    <div style='text-align: center; padding-top: 10px;'>
+        <h1 style='color: #1b5e20; margin-bottom: 0;'>🍷 Wine Intelligence Elite</h1>
+        <p style='font-size: 18px; color: #555; margin-top: 5px;'>
+            Ο έξυπνος τρόπος να ανακαλύπτεις διαμάντια, χωρίς να σπαταλάς χρήματα.
+        </p>
+    </div>
+    <hr style='margin-top: 20px; margin-bottom: 30px; border-top: 1px solid #ddd;'>
+""", unsafe_allow_html=True)
 
 try:
     if 'data' not in st.session_state:
@@ -104,11 +146,12 @@ try:
     df = st.session_state.data
     filt_df = df.copy()
 
-    # Φίλτρα
+    # Εφαρμογή Φίλτρων
     filt_df = filt_df[(filt_df['best_price'] >= price_range[0]) & (filt_df['best_price'] <= price_range[1])]
     if cat_filter: filt_df = filt_df[filt_df['category'].isin(cat_filter)]
     if search: filt_df = filt_df[filt_df['wine_name'].str.contains(search, case=False)]
 
+    # Ταξινόμηση
     if sort_option == "VfM Score":
         filt_df = filt_df.sort_values(by="VfM_Score", ascending=False)
     elif sort_option == "Τιμή (Αύξουσα)":
@@ -116,8 +159,8 @@ try:
     elif sort_option == "Rating":
         filt_df = filt_df.sort_values(by="score", ascending=False)
 
-    # --- ΤΑ ΜΕΤΡΙΚΑ ΣΟΥ (METRICS) ---
-    st.write("### 🔥 Οι 4 Κορυφαίες Επιλογές")
+    # --- TOP 4 CARDS ---
+    st.markdown("### 🔥 Οι Top 4 Ευκαιρίες Τώρα")
     top_4 = filt_df.head(4)
     cols = st.columns(4)
     for i, (idx, row) in enumerate(top_4.iterrows()):
@@ -126,45 +169,55 @@ try:
 
     st.write("---")
 
-    # --- ΓΡΑΦΗΜΑ & BUDGET OPTIMIZER ---
-    c_left, c_right = st.columns([2, 1])
-    with c_left:
-        st.subheader("📊 Ανάλυση Value for Money")
-        chart = alt.Chart(filt_df.head(10)).mark_bar(color='#81c784').encode(
-            x=alt.X('VfM_Score:Q', title='VfM Index'),
-            y=alt.Y('wine_name:N', sort='-x', title=None),
-            tooltip=['wine_name', 'best_price', 'score']
-        ).properties(height=320)
-        st.altair_chart(chart, use_container_width=True)
+    st.write("---")
 
-    with c_right:
-        st.subheader("💰 Budget Optimizer")
-        with st.expander("Υπολογισμός Καλαθιού", expanded=True):
-            user_budget = st.number_input("Budget (€)", min_value=10, value=60)
-            num_bottles = st.slider("Φιάλες", 1, 8, 3)
+    # --- CHARTS & BUDGET (ΠΤΥΣΣΟΜΕΝΑ ΓΙΑ ΚΑΘΑΡΗ ΕΙΚΟΝΑ) ---
+    # Όλα μπαίνουν μέσα σε ένα Expander που είναι κλειστό (expanded=False)
+    with st.expander("📊 Εργαλεία Ανάλυσης & Υπολογισμός Καλαθιού (Κλικ για άνοιγμα)", expanded=False):
+
+        c_left, c_right = st.columns([2, 1])
+
+        with c_left:
+            st.subheader("📈 Γράφημα Value for Money")
+            chart = alt.Chart(filt_df.head(10)).mark_bar(color='#81c784').encode(
+                x=alt.X('VfM_Score:Q', title='VfM Index'),
+                y=alt.Y('wine_name:N', sort='-x', title=None),
+                tooltip=['wine_name', 'best_price', 'score']
+            ).properties(height=320)
+            st.altair_chart(chart, use_container_width=True)
+
+        with c_right:
+            st.subheader("💰 Budget Optimizer")
+            st.markdown("Βρες τον ιδανικό συνδυασμό για το budget σου.")
+
+            user_budget = st.number_input("Διαθέσιμο ποσό (€)", min_value=10, value=60)
+            num_bottles = st.slider("Επιθυμητές φιάλες", 1, 8, 3)
+
             if st.button("Πρόταση Αγοράς"):
                 opt_df = filt_df.head(num_bottles)
-                st.table(opt_df[['wine_name', 'best_price']])
-                st.info(f"Σύνολο: {opt_df['best_price'].sum():.2f}€")
+                # Εμφάνιση αποτελεσμάτων πιο καθαρά
+                st.dataframe(opt_df[['wine_name', 'best_price']], hide_index=True)
+
+                total_cost = opt_df['best_price'].sum()
+                if total_cost <= user_budget:
+                    st.success(f"✅ Σύνολο: {total_cost:.2f}€ (Εντός budget)")
+                else:
+                    st.error(f"❌ Σύνολο: {total_cost:.2f}€ (Ξεπερνάει το budget κατά {total_cost - user_budget:.2f}€)")
 
     st.write("---")
 
-    # --- Ο ΠΙΝΑΚΑΣ ΜΕ ΤΙΣ ΣΗΜΕΙΩΣΕΙΣ ---
-    st.write("---")
+    # --- EDITOR (ΜΕ LARA LOGIC) ---
 
-    # --- ΕΔΩ ΜΠΑΙΝΕΙ ΤΟ ΕΞΥΠΝΟ BLOCK ---
-
-    # 1. Καθορίζουμε ποιες στήλες βλέπει ο απλός χρήστης (Public View)
+    # 1. Καθορίζουμε ποιες στήλες βλέπει ο απλός χρήστης
     cols_to_show = ["wine_name", "live_check", "best_price", "VfM_Score", "score", "category", "region"]
 
-    # 2. Αν ο κωδικός είναι σωστός, "ξεκλειδώνουμε" τις σημειώσεις (Admin View)
+    # 2. Αν ο κωδικός είναι "lara", εμφανίζουμε τις σημειώσεις
     if admin_password == "lara":
-        cols_to_show.insert(5, "notes")  # Τις βάζουμε ανάμεσα σε Score και Category
+        cols_to_show.insert(5, "notes")
 
     st.markdown('<p style="font-size: 22px; font-weight: bold; color: #1b5e20;">🍷 Διαχείριση Ετικετών</p>',
                 unsafe_allow_html=True)
 
-    # 3. Ο Editor χρησιμοποιεί πλέον τη δυναμική λίστα cols_to_show
     edited_df = st.data_editor(
         filt_df, use_container_width=True, num_rows="dynamic",
         column_config={
@@ -179,15 +232,16 @@ try:
             "region": st.column_config.TextColumn("Περιοχή", width=150),
             "shop": None, "awards": None, "url": None
         },
-        column_order=cols_to_show  # <--- ΕΔΩ ΣΥΝΔΕΕΤΑΙ Η ΑΛΛΑΓΗ
+        column_order=cols_to_show
     )
 
-    # --- ΤΕΛΟΣ BLOCK ---
-
     st.write("---")
+
+    # --- SAVE BUTTONS ---
     btn_col1, btn_col2, btn_col3 = st.columns([1, 1, 1])
 
     with btn_col1:
+        # Κουμπί Save εμφανίζεται ΜΟΝΟ αν ο κωδικός είναι "lara"
         if admin_password == "lara":
             if st.button("💾 ΑΠΟΘΗΚΕΥΣΗ"):
                 save_to_db(edited_df)
@@ -200,7 +254,8 @@ try:
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             filt_df.to_excel(writer, index=False)
-        st.download_button("📥 EXCEL", output.getvalue(), "Wine_Strategy.xlsx", "application/vnd.ms-excel")
+        st.download_button("📥 EXCEL", output.getvalue(),
+                           "Wine_Strategy.xlsx", "application/vnd.ms-excel")
 
     with btn_col3:
         if st.button("🔄 ΑΝΑΝΕΩΣΗ"): st.rerun()
