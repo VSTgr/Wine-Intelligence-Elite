@@ -131,21 +131,39 @@ try:
     st.write("---")
 
     # --- Ο ΠΙΝΑΚΑΣ ΜΕ ΤΙΣ ΣΗΜΕΙΩΣΕΙΣ ---
+    st.write("---")
+
+    # --- ΕΔΩ ΜΠΑΙΝΕΙ ΤΟ ΕΞΥΠΝΟ BLOCK ---
+
+    # 1. Καθορίζουμε ποιες στήλες βλέπει ο απλός χρήστης (Public View)
+    cols_to_show = ["wine_name", "live_check", "best_price", "VfM_Score", "score", "category", "region"]
+
+    # 2. Αν ο κωδικός είναι σωστός, "ξεκλειδώνουμε" τις σημειώσεις (Admin View)
+    if admin_password == "lara":
+        cols_to_show.insert(5, "notes")  # Τις βάζουμε ανάμεσα σε Score και Category
+
     st.markdown('<p style="font-size: 22px; font-weight: bold; color: #1b5e20;">🍷 Διαχείριση Ετικετών</p>',
                 unsafe_allow_html=True)
+
+    # 3. Ο Editor χρησιμοποιεί πλέον τη δυναμική λίστα cols_to_show
     edited_df = st.data_editor(
         filt_df, use_container_width=True, num_rows="dynamic",
         column_config={
-            "id": None, "wine_name": "Ονομασία",
-            "best_price": st.column_config.NumberColumn("Τιμή (€)", format="%.2f €"),
-            "score": st.column_config.ProgressColumn("Rating", min_value=80, max_value=100),
-            "VfM_Score": st.column_config.NumberColumn("VfM", format="%.1f", disabled=True),
-            "live_check": st.column_config.LinkColumn("🛒 Skroutz", display_text="Link"),
-            "notes": st.column_config.TextColumn("📝 Σημειώσεις"),
-            "category": "Τύπος", "region": "Περιοχή", "shop": None, "awards": None, "url": None
+            "id": None,
+            "wine_name": st.column_config.TextColumn("Ονομασία", width=220),
+            "live_check": st.column_config.LinkColumn("🛒 Skroutz", display_text="Link", width=90),
+            "best_price": st.column_config.NumberColumn("Τιμή (€)", format="%.2f €", width=100),
+            "VfM_Score": st.column_config.NumberColumn("VfM", format="%.1f", disabled=True, width=80),
+            "score": st.column_config.ProgressColumn("Rating", min_value=80, max_value=100, width=120),
+            "notes": st.column_config.TextColumn("📝 Σημειώσεις", width=300),
+            "category": st.column_config.TextColumn("Τύπος", width=110),
+            "region": st.column_config.TextColumn("Περιοχή", width=150),
+            "shop": None, "awards": None, "url": None
         },
-        column_order=["wine_name", "live_check", "best_price", "VfM_Score", "score", "notes", "category", "region"]
+        column_order=cols_to_show  # <--- ΕΔΩ ΣΥΝΔΕΕΤΑΙ Η ΑΛΛΑΓΗ
     )
+
+    # --- ΤΕΛΟΣ BLOCK ---
 
     st.write("---")
     btn_col1, btn_col2, btn_col3 = st.columns([1, 1, 1])
