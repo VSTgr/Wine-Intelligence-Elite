@@ -75,7 +75,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     # 2. ΟΔΗΓΟΣ (Χρήσιμος για όλους)
-    with st.expander("📘 Οδηγός"):
+    with st.expander("📘 Η Λογική της Επιλογής"):
         st.markdown("""
         **1. 🎯 Βάλε Στόχο:** Διάλεξε χρώμα (π.χ. *Ερυθρό*) και όρισε το Budget σου στα φίλτρα.
         
