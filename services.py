@@ -28,13 +28,17 @@ def load_wine_data():
         else:
             data['notes'] = data['notes'].fillna("")
 
-        # 2. Δημιουργία Link Skroutz (Vectorized operation για ταχύτητα)
-        # Αντικαθιστούμε τα κενά με '+' για το URL query
+        # 2. Καθαρισμός Food Pairing (ΝΕΟ)
+        if 'food_pairing' not in data.columns:
+            data['food_pairing'] = ""
+        else:
+            data['food_pairing'] = data['food_pairing'].fillna("")
+
+        # 3. Δημιουργία Link Skroutz (Vectorized operation για ταχύτητα)
         base_url = "https://www.skroutz.gr/search?keyphrase="
         data['live_check'] = base_url + data['wine_name'].str.replace(' ', '+')
 
-        # 3. Υπολογισμός VfM Score
-        # Αποφυγή διαίρεσης με το μηδέν
+        # 4. Υπολογισμός VfM Score
         data['VfM_Score'] = data.apply(
             lambda row: (row['score'] / row['best_price'] * 10)
             if row['best_price'] > 0 else 0,
@@ -44,7 +48,6 @@ def load_wine_data():
         return data
 
     except Exception as error:  # pylint: disable=broad-exception-caught
-        # Επιστρέφουμε κενό DataFrame σε περίπτωση λάθους για να μην κρασάρει το UI
         print(f"Error loading data: {error}")
         return pd.DataFrame()
 
@@ -61,7 +64,6 @@ def save_wine_data(dataframe):
 
     # Αφαιρούμε τις υπολογιζόμενες στήλες (δεν αποθηκεύονται στη βάση)
     cols_to_drop = ['VfM_Score', 'live_check']
-    # Κρατάμε μόνο στήλες που υπάρχουν όντως στο dataframe
     existing_cols_to_drop = [c for c in cols_to_drop if c in dataframe.columns]
 
     to_save = dataframe.drop(columns=existing_cols_to_drop)
