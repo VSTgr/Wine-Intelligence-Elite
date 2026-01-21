@@ -1,0 +1,7 @@
+[theme]
+base = "light"
+primaryColor = "#84A98C"                # Sage Green: Πολύ απαλό, φυσικό πράσινο (σαν φασκόμηλο)
+backgroundColor = "#FFFFFF"             # Λευκό φόντο
+secondaryBackgroundColor = "#F3F5F4"    # Ένα ανεπαίσθητο "σπασμένο" λευκό-πράσινο για το μενού
+textColor = "#4A4A4A"                   # Μαλακό γκρι (όχι κατάμαυρο) για να μην κουράζει στο διάβασμα
+font = "sans serif"

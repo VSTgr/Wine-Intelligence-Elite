@@ -103,14 +103,14 @@ def render_sidebar(df):
         # --- ΔΥΝΑΜΙΚΟ ΦΙΛΤΡΟ ΦΑΓΗΤΟΥ ---
         available_foods = get_unique_food_tags(df)
         selected_food = st.multiselect(
-            "🍽️ Τι θα φάτε σήμερα;",
+            "Τι θα φάτε σήμερα;",
             options=available_foods,
             placeholder="Επιλέξτε (π.χ. Sushi, Κρέας...)"
         )
         st.caption("ℹ️ Επιλέξτε φαγητό για να δείτε προτάσεις.")
         st.markdown("---")
 
-        search = st.text_input("🔍 Ψάχνεις κάτι;", placeholder="π.χ. Μαλαγουζιά")
+        search = st.text_input("Αναζήτηση", placeholder="π.χ. Μαλαγουζιά")
         cats = st.multiselect(
             "🍷 Χρώμα / Τύπος",
             ["Λευκό", "Ερυθρό", "Ροζέ", "Επιδόρπιος", "Αφρώδης"],
@@ -118,7 +118,7 @@ def render_sidebar(df):
         )
 
         # Budget 5-20 default
-        price = st.slider("💶 Budget (€)", 5.0, 60.0, (5.0, 20.0))
+        price = st.slider("Εύρος Τιμής (€)", 5.0, 60.0, (5.0, 20.0))
 
         sort = st.selectbox("📊 Ταξινόμηση", ["VfM Score", "Τιμή (Αύξουσα)", "Rating"])
 
@@ -181,7 +181,7 @@ def filter_data(df, search, cats, price, sort_option, food_pairing):
 
 def render_metrics(df):
     """Εμφανίζει τα Top 4 κρασιά."""
-    st.markdown("### 🔥 Οι Top Επιλογές")
+    st.markdown("### Προτεινόμενες Επιλογές")
     if df.empty:
         st.info("Δεν βρέθηκαν κρασιά με αυτά τα κριτήρια.")
         return
@@ -215,7 +215,7 @@ def render_charts_and_calculator(df):
             st.altair_chart(chart, use_container_width=True)
 
         with c_right:
-            st.subheader("💰 Budget Optimizer")
+            st.subheader("Budget Optimizer")
             user_budget = st.number_input("Διαθέσιμο ποσό (€)", min_value=10, value=60)
             num_bottles = st.slider("Επιθυμητές φιάλες", 1, 8, 3)
 
